@@ -30,7 +30,6 @@ The following fixtures should be present (see tests.read.conftest)
 
 """
 
-
 import datetime
 from distutils.version import LooseVersion
 from functools import partial
@@ -43,6 +42,7 @@ import pytest
 from storefact import get_store_from_url
 
 from kartothek.core.uuid import gen_uuid
+from kartothek.io.dask.dataframe import read_dataset_as_ddf
 from kartothek.io.eager import store_dataframes_as_dataset
 from kartothek.io.iter import store_dataframes_as_dataset__iter
 from kartothek.io_components.metapartition import SINGLE_TABLE, MetaPartition
@@ -801,3 +801,29 @@ def test_extensiondtype_rountrip(store_factory, bound_load_dataframes):
         result_dfs = result
     result_df = pd.concat(result_dfs).reset_index(drop=True)
     pdt.assert_frame_equal(df["data"][0][1], result_df)
+
+
+def test_read_dataset_multi_table_warning(store_factory, metadata_version, bound_load_dataframes):
+    dfs = [
+        {
+            "data": {
+                "core-table": pd.DataFrame({"id": [22, 23], "f": [1.1, 2.4]}),
+                "aux-table": pd.DataFrame({"id": [22], "col1": ["x"]}),
+            }
+        },
+        {
+            "data": {
+                "core-table": pd.DataFrame({"id": [29, 31], "f": [3.2, 0.6]}),
+                "aux-table": pd.DataFrame({"id": [31], "col1": ["y"]}),
+            }
+        },
+    ]
+
+    dm = store_dataframes_as_dataset(
+        dfs=dfs, store=store_factory, dataset_uuid="dataset_uuid"
+    )
+
+    with pytest.warns(DeprecationWarning):
+        result = bound_load_dataframes(
+            dataset_uuid="dataset_uuid", store=store_factory, tables=dm.tables[1]
+        )

@@ -11,7 +11,7 @@ from pandas import testing as pdt
 from pandas.testing import assert_frame_equal
 
 from kartothek.core.testing import get_dataframe_not_nested
-from kartothek.io.dask.dataframe import read_dataset_as_ddf
+from kartothek.io.dask.dataframe import read_dataset_as_ddf, update_dataset_from_ddf
 from kartothek.io.eager import store_dataframes_as_dataset
 from kartothek.io.testing.read import *  # noqa
 from kartothek.io_components.metapartition import SINGLE_TABLE

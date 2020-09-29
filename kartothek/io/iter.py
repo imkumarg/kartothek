@@ -68,6 +68,7 @@ def read_dataset_as_metapartitions__iterator(
         factory=factory,
         load_dataset_metadata=load_dataset_metadata,
     )
+
     store = ds_factory.store
     mps = dispatch_metapartitions_from_factory(
         ds_factory,
@@ -161,6 +162,22 @@ def read_dataset_as_dataframes__iterator(
             {'core': pd.DataFrame, 'lookup': pd.DataFrame}
         ]
     """
+    ds_factory = _ensure_factory(
+        dataset_uuid=dataset_uuid,
+        store=store,
+        factory=factory,
+        load_dataset_metadata=False,
+    )
+
+    if len(ds_factory.tables) > 1:
+        warnings.warn(
+            "Trying to read a dataset with multiple internal tables. This functionality will be removed in the next "
+            "major release. If you require a multi tabled data format, we recommend to switch to the kartothek Cube "
+            "functionality. "
+            "https://kartothek.readthedocs.io/en/stable/guide/cube/kartothek_cubes.html",
+            DeprecationWarning
+        )
+
     mp_iter = read_dataset_as_metapartitions__iterator(
         dataset_uuid=dataset_uuid,
         store=store,
